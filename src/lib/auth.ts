@@ -2,10 +2,18 @@ import bcrypt from 'bcryptjs';
 import { prisma } from './database';
 
 export async function hashPassword(password: string): Promise<string> {
+  if (typeof window !== 'undefined') {
+    // Client-side fallback (less secure, but for demo)
+    return btoa(password);
+  }
   return bcrypt.hash(password, 12);
 }
 
 export async function verifyPassword(password: string, hashedPassword: string): Promise<boolean> {
+  if (typeof window !== 'undefined') {
+    // Client-side fallback (less secure, but for demo)
+    return btoa(password) === hashedPassword;
+  }
   return bcrypt.compare(password, hashedPassword);
 }
 

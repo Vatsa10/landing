@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { createUser, authenticateUser } from '@/lib/auth';
+import { createUser, authenticateUser } from '@/lib/auth-client';
 
 export default function AuthPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -28,7 +28,7 @@ export default function AuthPage() {
         await createUser(email, password, name);
       }
       
-      // Store user session (simplified for demo)
+      // Store user session
       localStorage.setItem('user', JSON.stringify({ email, name }));
       router.push('/');
     } catch (err: any) {
@@ -45,7 +45,7 @@ export default function AuthPage() {
     }
 
     try {
-      const { generateResetToken, sendPasswordResetEmail } = await import('@/lib/auth');
+      const { generateResetToken, sendPasswordResetEmail } = await import('@/lib/auth-client');
       const token = await generateResetToken(email);
       await sendPasswordResetEmail(email, token);
       setError('Password reset link sent to your email (check console for demo)');
