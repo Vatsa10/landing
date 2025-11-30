@@ -1,16 +1,18 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Camera, FileText, Plus, Search, Filter, Eye, Download, Upload, Loader2 } from 'lucide-react';
+import { Camera, FileText, Plus, Search, Filter, Eye, Download, Upload, Loader2, Calendar } from 'lucide-react';
 import AppLayout from '@/components/layout/AppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Profile, Prescription, LabReport } from '@/types';
 import { extractPrescriptionData, extractLabReportData, mockPrescriptionExtraction, mockLabReportExtraction } from '@/lib/ai-extraction';
 import { convertFileToBase64, saveFileToLocalStorage } from '@/lib/file-upload';
+import { generateRemindersFromPrescription } from '@/lib/reminder-service';
+import HealthTimeline from '@/components/timeline/HealthTimeline';
 
 export default function RecordsPage() {
   const [currentProfile, setCurrentProfile] = useState<Profile | null>(null);
-  const [activeTab, setActiveTab] = useState<'prescriptions' | 'lab-reports'>('prescriptions');
+  const [activeTab, setActiveTab] = useState<'prescriptions' | 'lab-reports' | 'timeline'>('timeline');
   const [searchQuery, setSearchQuery] = useState('');
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadType, setUploadType] = useState<'prescription' | 'lab-report'>('prescription');
@@ -71,6 +73,19 @@ export default function RecordsPage() {
         const updatedPrescriptions = [...prescriptions, newPrescription];
         setPrescriptions(updatedPrescriptions);
         localStorage.setItem('prescriptions', JSON.stringify(updatedPrescriptions));
+
+        // Generate reminders from prescription
+        const newReminders = generateRemindersFromPrescription(
+          newPrescription.id,
+          currentProfile.id,
+          extractedData.medicines,
+          extractedData.date
+        );
+
+        // Save reminders to localStorage
+        const existingReminders = JSON.parse(localStorage.getItem('reminders') || '[]');
+        const allReminders = [...existingReminders, ...newReminders];
+        localStorage.setItem('reminders', JSON.stringify(allReminders));
       } else {
         // Lab report extraction
         const extractedData = await mockLabReportExtraction(); // Replace with extractLabReportData(base64) when API is configured
@@ -130,6 +145,16 @@ export default function RecordsPage() {
         {/* Tab Navigation */}
         <div className="flex gap-4 border-b border-gray-200">
           <button
+            onClick={() => setActiveTab('timeline')}
+            className={`pb-3 px-1 font-medium text-sm border-b-2 transition-colors ${
+              activeTab === 'timeline'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-600 hover:text-gray-900'
+            }`}
+          >
+            Timeline
+          </button>
+          <button
             onClick={() => setActiveTab('prescriptions')}
             className={`pb-3 px-1 font-medium text-sm border-b-2 transition-colors ${
               activeTab === 'prescriptions'
@@ -188,7 +213,14 @@ export default function RecordsPage() {
 
         {/* Records List */}
         <div className="space-y-4">
-          {activeTab === 'prescriptions' ? (
+          {activeTab === 'timeline' ? (
+            <HealthTimeline
+              prescriptions={prescriptions}
+              labReports={labReports}
+              searchQuery={searchQuery}
+              onSearchChange={setSearchQuery}
+            />
+          ) : activeTab === 'prescriptions' ? (
             prescriptions.length > 0 ? (
               prescriptions.map((prescription) => (
                 <Card key={prescription.id} className="hover:shadow-md transition-shadow">

@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -12,65 +9,88 @@ datasource db {
   provider = "sqlite"
 }
 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  resetToken String?
+  resetTokenExpires DateTime?
+  
+  profiles Profile[]
+}
+
 model Profile {
   id        String   @id @default(cuid())
   name      String
   age       Int
   gender    String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
   prescriptions Prescription[]
   labReports    LabReport[]
   reminders     Reminder[]
-
-  @@map("profiles")
 }
 
 model Prescription {
-  id             String   @id @default(cuid())
-  profileId      String   @map("profile_id")
-  date           String
+  id            String   @id @default(cuid())
+  profile_id    String
+  date          String
   doctor        String
-  diagnosis      String
-  medicines      Json // Array of medicine objects
-  followUpDate   String?  @map("follow_up_date")
-  fileUrl        String   @map("file_url")
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  diagnosis     String
+  medicines     Medicine[]
+  follow_up_date String?
+  file_url      String
+  createdAt     DateTime @default(now())
+  
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+}
 
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@map("prescriptions")
+model Medicine {
+  id            String @id @default(cuid())
+  name          String
+  dosage        String
+  frequency     String
+  duration_days Int
+  prescription  Prescription @relation(fields: [prescriptionId], references: [id], onDelete: Cascade)
+  prescriptionId String
 }
 
 model LabReport {
-  id       String   @id @default(cuid())
-  profileId String   @map("profile_id")
-  date     String
-  testName String   @map("test_name")
-  values   Json // Array of lab value objects
-  fileUrl  String   @map("file_url")
+  id        String     @id @default(cuid())
+  profile_id String
+  date      String
+  test_name String
+  values    LabValue[]
+  file_url  String
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
+}
 
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@map("lab_reports")
+model LabValue {
+  id            String @id @default(cuid())
+  name          String
+  value         Float
+  reference_range String
+  status        String // "low", "normal", "high"
+  labReport     LabReport @relation(fields: [labReportId], references: [id], onDelete: Cascade)
+  labReportId   String
 }
 
 model Reminder {
   id               String   @id @default(cuid())
-  profileId        String   @map("profile_id")
-  medicineName     String   @map("medicine_name")
+  profile_id       String
+  medicine_name    String
   time             String
-  repeatFrequency  String   @map("repeat_frequency")
-  durationDays     Int      @map("duration_days")
-  completedDays    Int      @default(0) @map("completed_days")
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-
-  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
-
-  @@map("reminders")
+  repeat_frequency String
+  duration_days    Int
+  completed_days   Int      @default(0)
+  created_at       DateTime @default(now())
+  
+  profile Profile @relation(fields: [profile_id], references: [id], onDelete: Cascade)
 }
