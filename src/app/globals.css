@@ -1,0 +1,62 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+@keyframes glow {
+  0% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+  }
+  25% {
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 30px rgba(255, 255, 255, 0.7), 0 0 40px rgba(255, 255, 255, 0.5);
+  }
+  50% {
+    text-shadow: 0 0 30px rgba(255, 255, 255, 1), 0 0 40px rgba(255, 255, 255, 0.8), 0 0 50px rgba(255, 255, 255, 0.6);
+  }
+  75% {
+    text-shadow: 0 0 25px rgba(255, 255, 255, 0.9), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.5);
+  }
+  100% {
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8), 0 0 20px rgba(255, 255, 255, 0.6), 0 0 30px rgba(255, 255, 255, 0.4);
+  }
+}
+
+@keyframes morph {
+  0% {
+    d: path("M10,20 Q30,10 60,20 T110,20 L110,30 Q90,40 60,30 T10,30 Z");
+  }
+  25% {
+    d: path("M10,15 Q35,5 60,15 T110,15 L110,35 Q85,45 60,35 T10,35 Z");
+  }
+  50% {
+    d: path("M15,20 Q35,12 60,20 T105,20 L105,30 Q85,38 60,30 T15,30 Z");
+  }
+  75% {
+    d: path("M10,25 Q30,15 60,25 T110,25 L110,25 Q90,35 60,25 T10,25 Z");
+  }
+  100% {
+    d: path("M10,20 Q30,10 60,20 T110,20 L110,30 Q90,40 60,30 T10,30 Z");
+  }
+}
